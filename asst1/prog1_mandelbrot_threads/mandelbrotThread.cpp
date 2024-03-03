@@ -36,16 +36,23 @@ void workerThreadStart(WorkerArgs * const args) {
     // half of the image and thread 1 could compute the bottom half.
 
     //确定当前线程的起始行和行数
-    int rowsPerBlock = args->height / args->numThreads;
+    uint32_t rowsPerBlock = args->height / args->numThreads;
     if (args->height % args->numThreads)
     {
         rowsPerBlock += 1;
     }
 
-    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
-                     rowsPerBlock * args->threadId, rowsPerBlock, args->maxIterations, args->output);
+    uint32_t startRow = rowsPerBlock * args->threadId;
+    rowsPerBlock = std::min(args->height - startRow, rowsPerBlock);
 
-    printf("Hello world from thread %d\n", args->threadId);
+    double startTime = CycleTimer::currentSeconds();
+
+    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
+                     startRow, rowsPerBlock, args->maxIterations, args->output);
+
+    double endTime = CycleTimer::currentSeconds();
+
+    printf("Hello world from thread %d, cost time = %lf\n", args->threadId, (endTime - startTime) * 1000);
 }
 
 //
