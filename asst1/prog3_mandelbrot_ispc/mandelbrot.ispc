@@ -47,20 +47,34 @@ task void mandelbrot_ispc_task(uniform float x0, uniform float y0,
 
     // taskIndex is an ISPC built-in
     
-    uniform int ystart = taskIndex * rowsPerTask;
-    uniform int yend = (taskIndex== taskNum-1? height : ystart + rowsPerTask);
+    //uniform int ystart = taskIndex * rowsPerTask;
+    //uniform int yend = (taskIndex== taskNum-1? height : ystart + rowsPerTask);
     //uniform int yend = ystart + rowsPerTask;
     
     uniform float dx = (x1 - x0) / width;
     uniform float dy = (y1 - y0) / height;
-    
-    foreach (j = ystart ... yend, i = 0 ... width) {
+
+    //网格跨步循环，这里对不均匀的任务性能会更好
+    for (int j = taskIndex; j < height; j += taskNum)
+    {
+        foreach (i = 0 ... width)
+        {
+            float x = x0 + i * dx;
+            float y = y0 + j * dy;
+
+            int index = j * width + i;
+            output[index] = mandel(x, y, maxIterations);
+        }
+    }
+
+    //传统的分块模式
+    /*foreach (j = ystart ... yend, i = 0 ... width) {
             float x = x0 + i * dx;
             float y = y0 + j * dy;
             
             int index = j * width + i;
             output[index] = mandel(x, y, maxIterations);
-    }
+    }*/
 }
 
 export void mandelbrot_ispc_withtasks(uniform float x0, uniform float y0,
@@ -73,7 +87,7 @@ export void mandelbrot_ispc_withtasks(uniform float x0, uniform float y0,
 
     uniform int rowsPerTask = height / taskNum;
 
-    // create 2 tasks
+    // create taskNum tasks
     launch[taskNum] mandelbrot_ispc_task(x0, y0, x1, y1,
                                      width, height,
                                      rowsPerTask,
