@@ -35,6 +35,16 @@ void workerThreadStart(WorkerArgs * const args) {
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
 
+    //确定当前线程的起始行和行数
+    int rowsPerBlock = args->height / args->numThreads;
+    if (args->height % args->numThreads)
+    {
+        rowsPerBlock += 1;
+    }
+
+    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
+                     rowsPerBlock * args->threadId, rowsPerBlock, args->maxIterations, args->output);
+
     printf("Hello world from thread %d\n", args->threadId);
 }
 
