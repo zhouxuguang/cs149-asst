@@ -22,6 +22,13 @@ extern void mandelbrotSerial(
     int maxIterations,
     int output[]);
 
+extern void mandelbrotStepSerial(
+        float x0, float y0, float x1, float y1,
+        int width, int height,
+        int startRow, int step,
+        int maxIterations,
+        int output[]);
+
 
 //
 // workerThreadStart --
@@ -35,20 +42,24 @@ void workerThreadStart(WorkerArgs * const args) {
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
 
-    //确定当前线程的起始行和行数
-    uint32_t rowsPerBlock = args->height / args->numThreads;
-    if (args->height % args->numThreads)
-    {
-        rowsPerBlock += 1;
-    }
-
-    uint32_t startRow = rowsPerBlock * args->threadId;
-    rowsPerBlock = std::min(args->height - startRow, rowsPerBlock);
-
     double startTime = CycleTimer::currentSeconds();
 
-    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
-                     startRow, rowsPerBlock, args->maxIterations, args->output);
+//    //确定当前线程的起始行和行数
+//    uint32_t rowsPerBlock = args->height / args->numThreads;
+//    if (args->height % args->numThreads)
+//    {
+//        rowsPerBlock += 1;
+//    }
+//
+//    uint32_t startRow = rowsPerBlock * args->threadId;
+//    rowsPerBlock = std::min(args->height - startRow, rowsPerBlock);
+//
+//    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
+//                     startRow, rowsPerBlock, args->maxIterations, args->output);
+
+    // thread i computes all the rows which is k * numThread + i，行数交错执行，这样就会将负载进行均衡
+    mandelbrotStepSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height,
+                         args->threadId, args->numThreads, args->maxIterations, args->output);
 
     double endTime = CycleTimer::currentSeconds();
 
