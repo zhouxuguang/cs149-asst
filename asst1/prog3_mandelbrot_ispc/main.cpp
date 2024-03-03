@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <getopt.h>
+#include <thread>
 
 #include "CycleTimer.h"
 #include "mandelbrot_ispc.h"
@@ -183,7 +184,7 @@ int main(int argc, char** argv) {
         //
         for (int i = 0; i < 3; ++i) {
             double startTime = CycleTimer::currentSeconds();
-            mandelbrot_ispc_withtasks(x0, y0, x1, y1, width, height, maxIterations, output_ispc_tasks);
+            mandelbrot_ispc_withtasks(x0, y0, x1, y1, width, height, maxIterations, output_ispc_tasks, std::thread::hardware_concurrency());
             double endTime = CycleTimer::currentSeconds();
             minTaskISPC = std::min(minTaskISPC, endTime - startTime);
         }
