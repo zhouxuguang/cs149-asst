@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <getopt.h>
 #include <math.h>
+#include <immintrin.h>
 #include "CS149intrin.h"
 #include "logger.h"
 using namespace std;
@@ -267,14 +268,34 @@ float arraySumSerial(float* values, int N) {
 // You can assume VECTOR_WIDTH is a power of 2
 float arraySumVector(float* values, int N) {
   
-  //
-  // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
-  //
-  
-  for (int i=0; i<N; i+=VECTOR_WIDTH) {
+    //
+    // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
+    //
 
-  }
+    int blockWidth = 8;
+    //int blockCount = N / blockWidth;
 
-  return 0.0;
+    float sum[8] = {0};
+    __m256 sum256 = _mm256_setzero_ps();
+    __m256 load256 = _mm256_setzero_ps();
+    for (uint64_t i = 0; i < N; i += blockWidth)
+    {
+        load256 = _mm256_loadu_ps(values + i);
+        sum256 = _mm256_add_ps(sum256, load256);
+    }
+    sum256 = _mm256_hadd_ps(sum256, sum256);
+    sum256 = _mm256_hadd_ps(sum256, sum256);
+    _mm256_storeu_ps(sum, sum256);
+    sum[0] += sum[4];
+    return sum[0];
+
+//    _mm256_storeu_ps(sum, sum256);
+//    float result = 0;
+//    for (int i=0; i<8; i++)
+//    {
+//        result += sum[i];
+//    }
+//
+//    return result;
 }
 

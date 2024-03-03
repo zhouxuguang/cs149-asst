@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(common)
 
+add_compile_options(-mfma)
+add_compile_options(-mavx)
+add_compile_options(-mavx2)
+
 add_executable(mandelbrot prog1_mandelbrot_threads/main.cpp
         prog1_mandelbrot_threads/mandelbrotSerial.cpp
         prog1_mandelbrot_threads/mandelbrotThread.cpp
